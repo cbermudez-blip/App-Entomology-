@@ -40,20 +40,27 @@ npx serve . -l 5500
 
 Luego abre: **http://localhost:5500**
 
-> La primera carga descarga React y Babel desde internet; después quedan en
-> caché del navegador.
+> La primera carga descarga React desde un CDN (con fallback entre unpkg,
+> jsDelivr y cdnjs); después queda en caché del navegador.
 
 ## 🗂️ Estructura
 
 ```
-index.html              # Punto de entrada: carga React/Babel y los scripts
+index.html              # Punto de entrada: carga React (CDN) y los scripts
+build.sh                # Regenera los .js a partir de los .jsx (requiere bun)
 src/
 ├── styles.css          # Estilos (tema verde entomológico, mobile-first)
 ├── data/
 │   └── diptera.js       # CONTENIDO del curso (única fuente de verdad)
-├── exercises.jsx        # Componentes de cada tipo de ejercicio + dispatcher
-└── app.jsx              # Pantallas (Home / Lesson / Result) y gamificación
+├── exercises.jsx        # FUENTE: componentes de ejercicios (editar aquí)
+├── exercises.js         # Generado: JSX transpilado a JS plano (lo carga el navegador)
+├── app.jsx              # FUENTE: pantallas y gamificación (editar aquí)
+└── app.js               # Generado: JSX transpilado a JS plano (lo carga el navegador)
 ```
+
+> El navegador carga los `.js` ya transpilados (no hay Babel en runtime, por eso
+> funciona bien en móvil y en GitHub Pages). Si editas un `.jsx`, regenera los
+> `.js` con `bash build.sh`.
 
 ## 📈 Cómo crece el contenido
 

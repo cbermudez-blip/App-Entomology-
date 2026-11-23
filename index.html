@@ -9,37 +9,92 @@
     <meta name="theme-color" content="#2e7d32" />
     <title>EntomoVía — Aprende entomología</title>
     <link rel="stylesheet" href="./src/styles.css" />
-
-    <!-- React + ReactDOM (producción UMD) desde CDN.
-         Tu navegador los descarga la primera vez; luego quedan en caché. -->
-    <script
-      crossorigin
-      src="https://unpkg.com/react@18/umd/react.production.min.js"
-    ></script>
-    <script
-      crossorigin
-      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
-    ></script>
-    <!-- Babel standalone: transpila el JSX directamente en el navegador. -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
     <div id="root">
-      <p style="padding: 40px; font-family: system-ui; color: #627080">
+      <p
+        id="boot-msg"
+        style="padding: 40px; font-family: system-ui; color: #627080"
+      >
         Cargando EntomoVía…
       </p>
     </div>
 
-    <!-- Datos del curso (JS normal; asigna COURSE a window). -->
-    <script src="./src/data/diptera.js"></script>
+    <!-- Carga React/ReactDOM desde CDN con fallback entre proveedores, y luego
+         los scripts de la app en orden. Si un CDN falla, prueba el siguiente;
+         si todos fallan, muestra un mensaje en vez de quedarse colgado. -->
+    <script>
+      (function () {
+        var REACT_CDNS = [
+          [
+            "https://unpkg.com/react@18/umd/react.production.min.js",
+            "https://unpkg.com/react-dom@18/umd/react-dom.production.min.js",
+          ],
+          [
+            "https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js",
+            "https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js",
+          ],
+          [
+            "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+          ],
+        ];
+        var APP_SCRIPTS = [
+          "./src/data/diptera.js",
+          "./src/exercises.js",
+          "./src/app.js",
+        ];
 
-    <!-- Componentes de ejercicios y app principal, transpilados por Babel.
-         El orden importa: exercises.jsx define window.ExerciseRenderer. -->
-    <script
-      type="text/babel"
-      data-presets="react"
-      src="./src/exercises.jsx"
-    ></script>
-    <script type="text/babel" data-presets="react" src="./src/app.jsx"></script>
+        function loadScript(url) {
+          return new Promise(function (resolve, reject) {
+            var s = document.createElement("script");
+            s.src = url;
+            s.crossOrigin = "anonymous";
+            s.onload = resolve;
+            s.onerror = function () {
+              reject(new Error("No se pudo cargar: " + url));
+            };
+            document.head.appendChild(s);
+          });
+        }
+
+        function fail(msg) {
+          var el = document.getElementById("boot-msg");
+          if (el) {
+            el.textContent = msg;
+            el.style.color = "#b71c1c";
+          }
+        }
+
+        function tryCdn(i) {
+          if (i >= REACT_CDNS.length) {
+            fail(
+              "No se pudo cargar React desde ningún CDN. Revisa tu conexión a internet e intenta recargar.",
+            );
+            return;
+          }
+          var pair = REACT_CDNS[i];
+          loadScript(pair[0])
+            .then(function () {
+              return loadScript(pair[1]);
+            })
+            .then(function () {
+              if (!window.React || !window.ReactDOM)
+                throw new Error("React no definido");
+              // React listo → cargar los scripts de la app en orden.
+              return APP_SCRIPTS.reduce(function (p, src) {
+                return p.then(function () {
+                  return loadScript(src);
+                });
+              }, Promise.resolve());
+            })
+            .catch(function () {
+              tryCdn(i + 1);
+            });
+        }
+
+        tryCdn(0);
+      })();
+    </script>
   </body>
 </html>
