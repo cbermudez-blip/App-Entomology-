@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#2e7d32" />
+    <title>EntomoVía — Aprende entomología</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+
+    <!-- React + ReactDOM (producción UMD) desde CDN.
+         Tu navegador los descarga la primera vez; luego quedan en caché. -->
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+    <!-- Babel standalone: transpila el JSX directamente en el navegador. -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root">
+      <p style="padding: 40px; font-family: system-ui; color: #627080">
+        Cargando EntomoVía…
+      </p>
+    </div>
+
+    <!-- Datos del curso (JS normal; asigna COURSE a window). -->
+    <script src="./src/data/diptera.js"></script>
+
+    <!-- Componentes de ejercicios y app principal, transpilados por Babel.
+         El orden importa: exercises.jsx define window.ExerciseRenderer. -->
+    <script
+      type="text/babel"
+      data-presets="react"
+      src="./src/exercises.jsx"
+    ></script>
+    <script type="text/babel" data-presets="react" src="./src/app.jsx"></script>
+  </body>
+</html>
