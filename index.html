@@ -9,6 +9,27 @@
     <meta name="theme-color" content="#2e7d32" />
     <title>EntomoVía — Aprende entomología</title>
     <link rel="stylesheet" href="./src/styles.css" />
+    <!-- Captura cualquier error de JS y lo muestra en pantalla, para no
+         quedarnos en 'Cargando…' en silencio si algo falla. -->
+    <script>
+      window.addEventListener("error", function (e) {
+        var el = document.getElementById("boot-msg");
+        if (el) {
+          el.style.color = "#b71c1c";
+          el.textContent =
+            "Error: " +
+            (e.message || e.error) +
+            (e.filename ? " (" + e.filename.split("/").pop() + ")" : "");
+        }
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        var el = document.getElementById("boot-msg");
+        if (el) {
+          el.style.color = "#b71c1c";
+          el.textContent = "Error de carga: " + (e.reason && e.reason.message);
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root">
@@ -39,10 +60,12 @@
             "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
           ],
         ];
+        // ?v= fuerza al navegador a descargar la versión nueva (evita caché vieja).
+        var V = "3";
         var APP_SCRIPTS = [
-          "./src/data/diptera.js",
-          "./src/exercises.js",
-          "./src/app.js",
+          "./src/data/diptera.js?v=" + V,
+          "./src/exercises.js?v=" + V,
+          "./src/app.js?v=" + V,
         ];
 
         function loadScript(url) {
@@ -66,6 +89,16 @@
           }
         }
 
+        function loadApp() {
+          APP_SCRIPTS.reduce(function (p, src) {
+            return p.then(function () {
+              return loadScript(src);
+            });
+          }, Promise.resolve()).catch(function (err) {
+            fail("No se pudo cargar la app: " + err.message);
+          });
+        }
+
         function tryCdn(i) {
           if (i >= REACT_CDNS.length) {
             fail(
@@ -81,12 +114,7 @@
             .then(function () {
               if (!window.React || !window.ReactDOM)
                 throw new Error("React no definido");
-              // React listo → cargar los scripts de la app en orden.
-              return APP_SCRIPTS.reduce(function (p, src) {
-                return p.then(function () {
-                  return loadScript(src);
-                });
-              }, Promise.resolve());
+              loadApp();
             })
             .catch(function () {
               tryCdn(i + 1);
